@@ -70,3 +70,6 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+Tic Tac Toe/Library/
+Tic Tac Toe/Temp/
+Tic Tac Toe/Logs/
