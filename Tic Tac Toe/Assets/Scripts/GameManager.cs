@@ -1,15 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    private CellStatus _nextCellStatus;
+    private CellStatus _nextCellStatus = CellStatus.Cross;
     private CellStatus[,] _board = new CellStatus[3, 3];
-    void Start()
-    {
-        
-    }
+    public CellStatus[,] GetBoard => _board;
+    [SerializeField]
+    private Statistics _statistics;
+    [SerializeField]
+    private EndGameController endGameController;
+    [SerializeField]
+    private LineController lineController;
+    [SerializeField]
+    private CellController[] _cells;
+    public CellController[] GetCells => _cells;
+    [SerializeField]
+    private AIBot bot;
+
 
     // Update is called once per frame
     public void UpdateNextCellStatus(CellStatus currentCellStatus)
@@ -21,77 +32,89 @@ public class GameManager : MonoBehaviour
         if (currentCellStatus == CellStatus.Circle)
         {
             _nextCellStatus = CellStatus.Cross;
-
-        }
-        if (currentCellStatus == CellStatus.None)
-        {
-            _nextCellStatus = CellStatus.Cross;
         }
     }
     public CellStatus GetNextCellStatus()
     {
         return _nextCellStatus;
     }
-    public void CheckWin()
+ 
+    bool CheckForWinner(CellStatus player)
     {
-    Debug.Log(_board[0, 0]);
-        //проверка строк
-        for(int row  = 0; row < 3; row++)
+        for (int i = 0; i < 3; i++)
         {
-            if(_board[row, 0] == CellStatus.Cross &&
-                _board[row, 1] == CellStatus.Cross &&
-                _board[row, 2] == CellStatus.Cross)
+            if (_board[i, 0] == player && _board[i, 1] == player && _board[i, 2] == player) // Проверка строк
             {
-                WinCross();
+                lineController.OpenHorizontalLine(i);
+                return true;
             }
+            if (_board[0, i] == player && _board[1, i] == player && _board[2, i] == player) // Проверка столбцов
+            {
+                lineController.OpenVerticalLine(i);
+                return true;
+            }
+        }
+        if (_board[0, 0] == player && _board[1, 1] == player && _board[2, 2] == player)
+        {
+            lineController.OpenDiagonalLine(0);
+            return true;
+        }            // Проверка диагоналей
 
-        }
-        for (int row = 0; row < 3; row++)
-        {
-            if (_board[row, 0] == CellStatus.Circle &&
-                _board[row, 1] == CellStatus.Circle &&
-                _board[row, 2] == CellStatus.Circle)
-            {
-                WinCircle();
-            }
-        }
-        //проверка столбцов
-        for (int col = 0; col < 3; col++)
-        {
-            if (_board[col, 0] == CellStatus.Cross &&
-                _board[col, 1] == CellStatus.Cross &&
-                _board[col, 2] == CellStatus.Cross)
-            {
-                WinCross();
-            }
 
-        }
-        for (int col = 0; col < 3; col++)
+        if (_board[0, 2] == player && _board[1, 1] == player && _board[2, 0] == player)
         {
-            if (_board[col, 0] == CellStatus.Circle &&
-                _board[col, 1] == CellStatus.Circle &&
-                _board[col, 2] == CellStatus.Circle)
-            {
-                WinCircle();
-            }
+            lineController.OpenDiagonalLine(1);
+            return true;
         }
-
+        return false;
     }
+
+    bool IsBoardFull()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                if (_board[i, j] == CellStatus.None)
+                    return false;
+            }
+        }
+        return true;
+    }
+
     public void SetCellStatus(int row, int col, CellStatus cellStatus)
     {
-        _board[row, col] = cellStatus;
-    }
-    private void WinCircle()
-    {
-        Debug.Log("Win Circle");
-    }
-    private void WinCross()
-    {
-        Debug.Log("Win Cross");
-    }
-    private void Draft()
-    {
+        if (_board[row, col] == CellStatus.None) 
+        {
+            _board[row, col] = cellStatus;
+            if(CheckForWinner(cellStatus) == true)
+            {
+                endGameController.SetWinner(cellStatus);
+            }
+            else if (IsBoardFull())
+            {
+                endGameController.SetWinner(CellStatus.None);
+            }
+            else
+            {
+                if(cellStatus == CellStatus.Cross)
+                {
+                    bot.Move();
 
+
+                }
+            }
+        }
+
+    }
+
+    public void Restart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    public void GoMainMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }
 

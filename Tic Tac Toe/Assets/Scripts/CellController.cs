@@ -14,6 +14,8 @@ public class CellController : MonoBehaviour
     private int col;
     [SerializeField]
     private int row;
+    [SerializeField]
+    private EndGameController _endGameController;
     // Start is called before the first frame update
     void Start()
     {
@@ -28,13 +30,14 @@ public class CellController : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (_currentCellStatus == CellStatus.None)
+        
+        if (_currentCellStatus == CellStatus.None && _endGameController.GetIsGameOver ==  false)
         {
             SetCurrentCellStatus();
         }
     }
 
-    private void SetCurrentCellStatus()
+    public void SetCurrentCellStatus()
     {
         CellStatus nextCellStatus = _gameManager.GetNextCellStatus();
         if (nextCellStatus == CellStatus.Circle)
@@ -48,6 +51,17 @@ public class CellController : MonoBehaviour
         _gameManager.UpdateNextCellStatus(nextCellStatus);
         _currentCellStatus = nextCellStatus;
         _gameManager.SetCellStatus(row, col, _currentCellStatus);
-        _gameManager.CheckWin();
+    }
+    public bool IsSuitable(int col, int row)
+    {
+        if (this.col == col && this.row == row)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
     }
 }
